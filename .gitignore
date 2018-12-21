@@ -7,4 +7,5 @@
 *Untitled.ipynb
 *test_results/
 dist/
-malemba.egg-info/
+build/
+MaLeMBa.egg-info/
