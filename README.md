@@ -4,7 +4,7 @@ Python package for base manipulations with datasets and machine learning models 
 ## Installation
 To install the package from PyPI type:
 ```
-pip install malemba  # doesn't work now
+pip install malemba
 ```
 Or from the repo:
 ```
