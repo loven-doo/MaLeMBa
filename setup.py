@@ -4,12 +4,12 @@ setup(
     name='MaLeMBa',
     version='0.1.0',
     author="Denis Moshensky",
-    author_email="loven-doo@fbb.msu.ru",  #
+    author_email="loven7doo@gmail.com",  
     description="Machine Learning Models Base",
     url="https://github.com/loven-doo/MaLeMBa",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: BSD License",  #
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
     packages=find_packages(),
