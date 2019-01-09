@@ -1,4 +1,5 @@
 from abc import abstractmethod, ABCMeta
+from copy import deepcopy
 from collections import defaultdict, OrderedDict
 
 import pandas as pd
