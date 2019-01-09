@@ -56,7 +56,7 @@ class ModelBase(metaclass=ABCMeta):
         tables_2x2["Chi-sq_P-value"] = chi2_contingency(tables_2x2_array)[1]
         return tables_2x2, confusion_matrix
 
-        @classmethod
+    @classmethod
     def optimize_params(cls,
                         X,
                         Y,
