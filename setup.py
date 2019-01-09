@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='MaLeMBa',
-    version='0.1.5',
+    version='0.2.0',
     author="Denis Moshensky",
     author_email="loven7doo@gmail.com",  
     description="Machine Learning Models Base",

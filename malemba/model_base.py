@@ -56,6 +56,49 @@ class ModelBase(metaclass=ABCMeta):
         tables_2x2["Chi-sq_P-value"] = chi2_contingency(tables_2x2_array)[1]
         return tables_2x2, confusion_matrix
 
+        @classmethod
+    def optimize_params(cls,
+                        X,
+                        Y,
+                        X_test,
+                        Y_test,
+                        var_params_grid,
+                        constant_params=None,
+                        eval_labels=None):
+
+        best_params = dict((param, var_params_grid[param].pop(0)) for param in var_params_grid)
+        if constant_params is not None:
+            best_params.update(constant_params)
+        model_0 = cls(params=deepcopy(best_params))
+        X_eval=deepcopy(model_0.str_to_factors(X=X))
+        X_test=model_0.str_to_factors(X=X_test)
+        str_features_f50 = model_0._str_features_f50
+        model_0.fit(X=X_eval, Y=Y)
+        confusion_matrix = model_0.validate(X_test=X_test, Y_test=Y_test)[1]
+        if type(eval_labels) in (list, tuple, set, frozenset):
+            best_score = sum(confusion_matrix[label][label] for label in eval_labels)
+        else:
+            best_score = sum(confusion_matrix[label][label] for label in confusion_matrix.columns)
+        for param in var_params_grid:
+            print("'%s' parameter optimization started" % str(param))
+            curr_params = deepcopy(best_params)
+            for param_v in var_params_grid[param]:
+                curr_params[param] = param_v
+                model = cls(params=deepcopy(curr_params))
+                model._str_features_f50 = str_features_f50
+                model.fit(X=X_eval, Y=Y)
+                confusion_matrix = model.validate(X_test=X_test, Y_test=Y_test)[1]
+                if type(eval_labels) in (list, tuple, set, frozenset):
+                    score = sum(confusion_matrix[label][label] for label in eval_labels)
+                else:
+                    score = sum(confusion_matrix[label][label] for label in confusion_matrix.columns)
+                if score > best_score:
+                    best_score = score
+                    best_params[param] = param_v
+            print("'%s' parameter optimization finished - optimal value: %s" % (str(param),
+                                                                                str(best_params[param])))
+        return best_params, best_score
+
     @abstractmethod
     def dump(self, scheme_path, **kwargs):
         pass
