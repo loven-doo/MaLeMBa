@@ -5,7 +5,8 @@ class ArrayHandler(object):
 
     def aggregate(self, array, aggr_level):
         if aggr_level < 1:
-            yield array
+            for elm in array:
+                yield elm
         if self.group_lims is None:
             self.group_lims = [list() for k in range(aggr_level)]
             i = -1
