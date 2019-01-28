@@ -3,6 +3,7 @@ from copy import deepcopy
 from itertools import tee
 from collections import defaultdict, OrderedDict
 
+import numpy as np
 import pandas as pd
 from scipy.stats import fisher_exact, chi2_contingency
 
@@ -26,6 +27,7 @@ class ModelBase(metaclass=ABCMeta):
         pass
 
     def validate(self, X_test, Y_test, labels_to_remove=None):
+        Y_test = np.stack(Y_test)
         tables_2x2 = defaultdict(lambda: defaultdict(int))
         test_pred = self.predict(X=X_test)
         labels = tuple(test_pred[0].keys())
