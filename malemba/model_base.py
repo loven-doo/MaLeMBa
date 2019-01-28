@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
+from itertools import tee
 from collections import defaultdict, OrderedDict
 
 import pandas as pd
@@ -9,11 +10,19 @@ from scipy.stats import fisher_exact, chi2_contingency
 class ModelBase(metaclass=ABCMeta):
 
     @abstractmethod
+    def __init__(self, params=None):
+        self._str_features_f50 = dict()
+
+    @abstractmethod
     def fit(self, X, Y):
         pass
 
     @abstractmethod
     def predict(self, X):
+        pass
+
+    @abstractmethod
+    def str_to_factors(self, X):
         pass
 
     def validate(self, X_test, Y_test, labels_to_remove=None):
@@ -71,11 +80,13 @@ class ModelBase(metaclass=ABCMeta):
         if constant_params is not None:
             best_params.update(constant_params)
         model_0 = cls(params=deepcopy(best_params))
-        X_eval=deepcopy(model_0.str_to_factors(X=X))
+        X_eval=model_0.str_to_factors(X=X)
         X_test=model_0.str_to_factors(X=X_test)
+        X_eval, X_eval0 = tee(X_eval)
+        X_test, X_test0 = tee(X_test)
         str_features_f50 = model_0._str_features_f50
-        model_0.fit(X=X_eval, Y=Y)
-        confusion_matrix = model_0.validate(X_test=X_test, Y_test=Y_test)[1]
+        model_0.fit(X=X_eval0, Y=Y)
+        confusion_matrix = model_0.validate(X_test=X_test0, Y_test=Y_test)[1]
         if type(eval_labels) in (list, tuple, set, frozenset):
             best_score = sum(confusion_matrix[label][label] for label in eval_labels)
         else:
@@ -84,11 +95,13 @@ class ModelBase(metaclass=ABCMeta):
             print("'%s' parameter optimization started" % str(param))
             curr_params = deepcopy(best_params)
             for param_v in var_params_grid[param]:
+                X_eval, X_evali = tee(X_eval)
+                X_test, X_testi = tee(X_test)
                 curr_params[param] = param_v
                 model = cls(params=deepcopy(curr_params))
                 model._str_features_f50 = str_features_f50
-                model.fit(X=X_eval, Y=Y)
-                confusion_matrix = model.validate(X_test=X_test, Y_test=Y_test)[1]
+                model.fit(X=X_evali, Y=Y)
+                confusion_matrix = model.validate(X_test=X_testi, Y_test=Y_test)[1]
                 if type(eval_labels) in (list, tuple, set, frozenset):
                     score = sum(confusion_matrix[label][label] for label in eval_labels)
                 else:
