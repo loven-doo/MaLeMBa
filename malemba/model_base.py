@@ -109,6 +109,10 @@ class ModelBase(metaclass=ABCMeta):
     def load(cls, scheme_path):
         pass
 
+    @abstractmethod
+    def get_features(self, X):
+        pass
+
     @property
     @abstractmethod
     def features(self):
