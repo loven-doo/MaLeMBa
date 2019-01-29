@@ -14,7 +14,8 @@ class ModelBase(metaclass=ABCMeta):
         self.params = params
         self._features = dict()
         self._labels = dict()
-        self._str_features_f50 = dict()
+        self._str_features_topf = dict()
+        self.topf = 0.5
 
     @abstractmethod
     def fit(self, X, Y):
@@ -60,7 +61,7 @@ class ModelBase(metaclass=ABCMeta):
             X_test = model_0.str_to_factors(X=X_test)
         else:
             X_eval = X
-        str_features_f50 = model_0._str_features_f50
+        str_features_topf = model_0._str_features_topf
         X_eval, X_eval0 = tee(X_eval)
         X_test, X_test0 = tee(X_test)
         model_0.fit(X=X_eval0, Y=Y)
@@ -77,7 +78,7 @@ class ModelBase(metaclass=ABCMeta):
                 X_test, X_testi = tee(X_test)
                 curr_params[param] = param_v
                 model = cls(params=deepcopy(curr_params))
-                model._str_features_f50 = str_features_f50
+                model._str_features_topf = str_features_topf
                 model.fit(X=X_evali, Y=Y)
                 confusion_matrix = model.validate(X_test=X_testi, Y_test=Y_test)[1]
                 if type(eval_labels) in (list, tuple, set, frozenset):
@@ -232,7 +233,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
 
     def str_to_factors(self, X):
         X, X0 = tee(X)
-        if not self._str_features_f50:
+        if not self._str_features_topf:
             str_features = defaultdict(lambda: defaultdict(int))
             for x in X0:
                 for feat in x:
@@ -243,32 +244,32 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             for feat in list(x.keys()):
                 if type(x[feat]) is str:
                     x.update(self._fill_str_features(feat=feat,
-                                                         feat_v=x[feat],
-                                                         features_f50=self._str_features_f50[feat]))
+                                                     feat_v=x[feat],
+                                                     features_topf=self._str_features_topf[feat]))
                     del x[feat]
             yield x
 
     def _get_str_features_f50(self, str_features):
         for feat in str_features:
-            features_f50 = set()
+            features_topf = set()
             cur_sum = float()
             full_sum = sum(str_features[feat].values())
             for feat_item in sorted(str_features[feat].items(), key=lambda fi: fi[1], reverse=True):
-                features_f50.add(feat_item[0])
+                features_topf.add(feat_item[0])
                 cur_sum += float(feat_item[1]) / float(full_sum)
-                if cur_sum >= 0.5:
+                if cur_sum >= self.topf:
                     break
-            if features_f50:
-                self._str_features_f50[feat] = frozenset(features_f50)
+            if features_topf:
+                self._str_features_topf[feat] = frozenset(features_topf)
 
     @staticmethod
-    def _fill_str_features(feat, feat_v, features_f50):
+    def _fill_str_features(feat, feat_v, features_topf):
         str_features = dict()
-        for f50_feat_v in features_f50:
-            if feat_v == f50_feat_v:
-                str_features[feat + "_" + f50_feat_v] = True
+        for topf_feat_v in features_topf:
+            if feat_v == topf_feat_v:
+                str_features[feat + "_" + topf_feat_v] = True
             else:
-                str_features[feat + "_" + f50_feat_v] = False
+                str_features[feat + "_" + topf_feat_v] = False
         return str_features
 
 
