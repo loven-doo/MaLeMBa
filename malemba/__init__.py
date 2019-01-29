@@ -1,2 +1,2 @@
-from malemba.model_base import ModelBase
+from malemba.model_base import ModelBase, ArrayModelBase
 
