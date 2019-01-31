@@ -57,15 +57,16 @@ class ModelBase(metaclass=ABCMeta):
             best_params.update(constant_params)
         model_0 = cls(params=deepcopy(best_params))
         if cls._convert_str_to_factors():
-            X_eval = model_0.str_to_factors(X=X)
-            X_test = model_0.str_to_factors(X=X_test)
+            X_eval = np.stack(model_0.str_to_factors(X=X))
+            X_test = np.stack(model_0.str_to_factors(X=X_test))
         else:
-            X_eval = X
+            X_eval = np.stack(X)
+            X_test = np.stack(X_test)
         str_features_topf = model_0._str_features_topf
-        X_eval, X_eval0 = tee(X_eval)
-        X_test, X_test0 = tee(X_test)
-        model_0.fit(X=X_eval0, Y=Y)
-        confusion_matrix = model_0.validate(X_test=X_test0, Y_test=Y_test)[1]
+        Y_eval = np.stack(Y)
+        Y_test = np.stack(Y_test)
+        model_0.fit(X=X_eval, Y=Y_eval)
+        confusion_matrix = model_0.validate(X_test=X_test, Y_test=Y_test)[1]
         if type(eval_labels) in (list, tuple, set, frozenset):
             best_score = sum(confusion_matrix[label][label] for label in eval_labels)
         else:
@@ -74,13 +75,11 @@ class ModelBase(metaclass=ABCMeta):
             print("'%s' parameter optimization started" % str(param))
             curr_params = deepcopy(best_params)
             for param_v in var_params_grid[param]:
-                X_eval, X_evali = tee(X_eval)
-                X_test, X_testi = tee(X_test)
                 curr_params[param] = param_v
                 model = cls(params=deepcopy(curr_params))
                 model._str_features_topf = str_features_topf
-                model.fit(X=X_evali, Y=Y)
-                confusion_matrix = model.validate(X_test=X_testi, Y_test=Y_test)[1]
+                model.fit(X=X_eval, Y=Y_eval)
+                confusion_matrix = model.validate(X_test=X_test, Y_test=Y_test)[1]
                 if type(eval_labels) in (list, tuple, set, frozenset):
                     score = sum(confusion_matrix[label][label] for label in eval_labels)
                 else:
@@ -237,7 +236,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             str_features = defaultdict(lambda: defaultdict(int))
             for x in X0:
                 for feat in x:
-                    if type(x[feat]) is str:
+                    if type(x[feat]) in (str, np.str_, np.str):
                         str_features[feat][x[feat]] += 1
             self._get_str_features_f50(str_features)
         for x in X:
