@@ -20,7 +20,7 @@ setup(
     packages=find_packages(),
     package_data={},
     install_requires=[
-        'numpy >= 1.15.1, <= 1.16.0',
+        'numpy >= 1.15.1',
         'pandas >= 0.23.4',
         'scipy >= 1.1.0',
     ],

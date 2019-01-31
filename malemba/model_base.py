@@ -57,14 +57,14 @@ class ModelBase(metaclass=ABCMeta):
             best_params.update(constant_params)
         model_0 = cls(params=deepcopy(best_params))
         if cls._convert_str_to_factors():
-            X_eval = np.stack(model_0.str_to_factors(X=X))
-            X_test = np.stack(model_0.str_to_factors(X=X_test))
+            X_eval = np.array(list(model_0.str_to_factors(X=X)))
+            X_test = np.array(list(model_0.str_to_factors(X=X_test)))
         else:
-            X_eval = np.stack(X)
-            X_test = np.stack(X_test)
+            X_eval = np.array(list(X))
+            X_test = np.array(list(X_test))
         str_features_topf = model_0._str_features_topf
-        Y_eval = np.stack(Y)
-        Y_test = np.stack(Y_test)
+        Y_eval = np.array(list(Y))
+        Y_test = np.array(list(Y_test))
         model_0.fit(X=X_eval, Y=Y_eval)
         confusion_matrix = model_0.validate(X_test=X_test, Y_test=Y_test)[1]
         if type(eval_labels) in (list, tuple, set, frozenset):
