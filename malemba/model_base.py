@@ -148,7 +148,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         return X  # this X can be the input for predict
 
     def validate(self, X_test, Y_test, labels_to_remove=None):
-        Y_test = np.stack(Y_test)
+        Y_test = np.array(list(Y_test))
         tables_2x2 = defaultdict(lambda: defaultdict(int))
         test_pred = self.predict(X=X_test)
         labels = tuple(test_pred[0].keys())
