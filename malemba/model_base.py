@@ -97,7 +97,7 @@ class ModelBase(metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def load(cls, scheme_path):
+    def load(cls, scheme_path, params=None, **kwargs):
         pass
 
     @abstractmethod
@@ -195,7 +195,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
 
     @classmethod
     @abstractmethod
-    def load(cls, scheme_path):
+    def load(cls, scheme_path, params=None, **kwargs):
         pass
 
     def get_features(self, X):
