@@ -13,9 +13,14 @@ class ModelBase(metaclass=ABCMeta):
     def __init__(self, params=None, **kwargs):
         self.params = params
         self._features = dict()
+        self._feature_types = dict()
         self._labels = dict()
+        self._label_freqs = defaultdict(float)
         self._str_features_topf = dict()
         self.topf = 0.5
+        self.label_weights = defaultdict(lambda: 1.0)
+        if 'label_weights' in kwargs:
+            self.label_weights.update(kwargs['label_weights'])
 
     @abstractmethod
     def fit(self, X, Y):
@@ -107,12 +112,22 @@ class ModelBase(metaclass=ABCMeta):
     @property
     @abstractmethod
     def features(self):
-        pass
+        return list(map(lambda f: f[0], sorted(self._features.items(), key=lambda f: f[1])))
+
+    @property
+    @abstractmethod
+    def feature_types(self):
+        return self._feature_types
 
     @property
     @abstractmethod
     def labels(self):
-        pass
+        return list(map(lambda l: l[0], sorted(self._labels.items(), key=lambda l: l[1])))
+
+    @property
+    @abstractmethod
+    def label_freqs(self):
+        return self._label_freqs
 
 
 class ArrayModelBase(ModelBase, metaclass=ABCMeta):
@@ -176,8 +191,9 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
                 del tables_2x2[label]
         tables_2x2_array = list()
         for label in tables_2x2.keys():
-            tables_2x2_array.append([[tables_2x2[label]["TP"], tables_2x2[label]["FP"]],
-                                     [tables_2x2[label]["FN"], tables_2x2[label]["TN"]]])
+            adj = self.label_freqs[label]/(1-self.label_freqs[label])
+            tables_2x2_array.append([[tables_2x2[label]["TP"], int(tables_2x2[label]["FP"]*adj)],
+                                     [tables_2x2[label]["FN"], int(tables_2x2[label]["TN"]*adj)]])
             tables_2x2[label]["Fisher_P-value"] = fisher_exact(tables_2x2_array[-1],
                                                                alternative='greater')[1]
             try:
@@ -204,6 +220,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             for feat in x:
                 if feat not in self._features:
                     self._features[feat] = i
+                    self._feature_types[feat] = type(x[feat])
                     i += 1
 
     def standardize_X(self, X):
@@ -218,8 +235,16 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         return list(map(lambda f: f[0], sorted(self._features.items(), key=lambda f: f[1])))
 
     @property
+    def feature_types(self):
+        return self._feature_types
+
+    @property
     def labels(self):
         return list(map(lambda l: l[0], sorted(self._labels.items(), key=lambda l: l[1])))
+
+    @property
+    def label_freqs(self):
+        return self._label_freqs
 
     @staticmethod
     @abstractmethod
