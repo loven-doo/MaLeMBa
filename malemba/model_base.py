@@ -143,7 +143,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         X, Xf = tee(X)
         self.get_features(X=Xf)
         Y, Ys = tee(Y)
-        labels_list = list(set(Ys))
+        labels_list = self.get_labels_list(Y=Ys)
         self._labels = dict((labels_list[i], i) for i in range(len(labels_list)))
         X = self.standardize_X(X=X)
         Y = map(lambda l: self._labels[l], Y)
@@ -230,7 +230,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
                 feat_vals.append(x.get(feat, np.nan))
             yield np.array(feat_vals)
 
-    def get_labels_list(Y):
+    def get_labels_list(self, Y):
         labels = set()
         labels_num = defaultdict(int)
         n = 0
