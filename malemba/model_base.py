@@ -230,6 +230,19 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
                 feat_vals.append(x.get(feat, np.nan))
             yield np.array(feat_vals)
 
+    def get_labels_list(Y):
+        labels = set()
+        labels_num = defaultdict(int)
+        n = 0
+        for y in Y:
+            labels_num[y] += 1
+            labels.add(y)
+            n += 1
+
+        for label in labels:
+            self._label_freqs[label] = labels_num[label]/n
+        return list(labels)
+
     @property
     def features(self):
         return list(map(lambda f: f[0], sorted(self._features.items(), key=lambda f: f[1])))
