@@ -21,6 +21,9 @@ class ModelBase(metaclass=ABCMeta):
         self.label_weights = defaultdict(lambda: 1.0)
         if 'label_weights' in kwargs:
             self.label_weights.update(kwargs['label_weights'])
+        self.low_memory = False
+        if 'low_memory' in kwargs:
+            self.low_memory = True
 
     @abstractmethod
     def fit(self, X, Y):
@@ -254,8 +257,14 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
 
     @staticmethod
     def np_array(X, data_shape, low_memory=False):
-        data = np.empty(data_shape[0], dtype=np.dtype([("f%s" % i, self.feature_types[self.features[i]])
-                                                       for i in self.features]))
+        if low_memory:
+            data = np.memmap("data.dat", 
+                             np.dtype([("f%s" % i, self.feature_types[self.features[i]]) for i in self.features]),
+                             mode='w+',
+                             shape=data_shape)
+        else:
+            data = np.empty(data_shape[0], 
+                            dtype=np.dtype([("f%s" % i, self.feature_types[self.features[i]]) for i in self.features]))
         for i, x in enumerate(X):
             data[i] = x
         return data
