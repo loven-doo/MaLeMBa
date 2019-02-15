@@ -262,7 +262,8 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         else:
             data = np.empty(data_shape[0], dtype=dtype)
         for i, x in enumerate(X):
-            data[i] = x
+            for j in range(len(x)):
+                data[i][j] = x[j]
         return data
 
     @property
