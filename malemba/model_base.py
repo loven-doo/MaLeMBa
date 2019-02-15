@@ -255,8 +255,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             self._label_freqs[label] = labels_num[label]/n
         return list(labels)
 
-    @staticmethod
-    def np_array(X, data_shape, low_memory=False):
+    def np_array(self, X, data_shape, low_memory=False):
         if low_memory:
             data = np.memmap("data.dat", 
                              np.dtype([("f%s" % i, self.feature_types[self.features[i]]) for i in self.features]),
