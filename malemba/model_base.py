@@ -141,14 +141,15 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         if self._convert_str_to_factors():
             X = self.str_to_factors(X)
         X, Xf = tee(X)
-        self.get_features(X=Xf)
+        data_l = self.get_features(X=Xf)
+        data_shape = (data_l, len(self.features))
         Y, Ys = tee(Y)
         labels_list = self.get_labels_list(Y=Ys)
         self._labels = dict((labels_list[i], i) for i in range(len(labels_list)))
         X = self.standardize_X(X=X)
         Y = map(lambda l: self._labels[l], Y)
         # train the model
-        return X, Y  # this X and Y can be the input for train
+        return X, Y, data_shape  # this X and Y can be the input for train
 
     @abstractmethod
     def predict(self, X):
@@ -159,8 +160,13 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         if self._convert_str_to_factors():
             X = self.str_to_factors(X)
         X = self.standardize_X(X=X)
+        X, Xl = tee(X)
+        data_l = 0
+        for x in Xl:
+            data_l += 1
+        data_shape = (data_l, len(self.features))
         # get and return the prediction result
-        return X  # this X can be the input for predict
+        return X, data_shape  # this X can be the input for predict
 
     def validate(self, X_test, Y_test, labels_to_remove=None):
         Y_test = np.array(list(Y_test))
@@ -216,12 +222,15 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
 
     def get_features(self, X):
         i = 0
+        l = 0
         for x in X:
             for feat in x:
                 if feat not in self._features:
                     self._features[feat] = i
                     self._feature_types[feat] = type(x[feat])
                     i += 1
+            l += 1
+        return l
 
     def standardize_X(self, X):
         for x in X:
@@ -243,6 +252,14 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             self._label_freqs[label] = labels_num[label]/n
         return list(labels)
 
+    @staticmethod
+    def np_array(X, data_shape, low_memory=False):
+        data = np.empty(data_shape[0], dtype=np.dtype([("f%s" % i, self.feature_types[self.features[i]])
+                                                       for i in self.features]))
+        for i, x in enumerate(X):
+            data[i] = x
+        return data
+
     @property
     def features(self):
         return list(map(lambda f: f[0], sorted(self._features.items(), key=lambda f: f[1])))
@@ -250,6 +267,8 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
     @property
     def feature_types(self):
         return self._feature_types
+
+    
 
     @property
     def labels(self):
