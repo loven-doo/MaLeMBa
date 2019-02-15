@@ -256,14 +256,11 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         return list(labels)
 
     def np_array(self, X, data_shape, low_memory=False):
+        dtype = np.dtype([("f%s" % i, self.feature_types[self.features[i]]) for i in range(len(self.features])))
         if low_memory:
-            data = np.memmap("data.dat", 
-                             np.dtype([("f%s" % i, self.feature_types[self.features[i]]) for i in self.features]),
-                             mode='w+',
-                             shape=data_shape)
+            data = np.memmap("data.dat", dtype=dtype, mode='w+', shape=data_shape)
         else:
-            data = np.empty(data_shape[0], 
-                            dtype=np.dtype([("f%s" % i, self.feature_types[self.features[i]]) for i in self.features]))
+            data = np.empty(data_shape[0], dtype=dtype)
         for i, x in enumerate(X):
             data[i] = x
         return data
