@@ -263,12 +263,11 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             # data = np.empty(data_shape[0], dtype=dtype)
             data = np.empty(data_shape)
         for i, x in enumerate(X):
-            # for j in range(len(x)):
-            #     try:
-            #         data[i][j] = x[j]
-            #     except ValueError:
-            #         continue
-            data[i] = x
+            for j in range(len(x)):
+                try:
+                    data[i][j] = x[j]
+                except ValueError:
+                    continue
         return data
 
     @property
