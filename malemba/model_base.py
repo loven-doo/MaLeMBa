@@ -260,8 +260,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         if low_memory:
             data = np.memmap("data.dat", dtype=dtype, mode='w+', shape=data_shape)
         else:
-            # data = np.empty(data_shape[0], dtype=dtype)
-            data = np.empty(data_shape)
+            data = np.empty(data_shape[0], dtype=dtype)
         for i, x in enumerate(X):
             for j in range(len(x)):
                 try:
