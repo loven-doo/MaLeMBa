@@ -260,13 +260,15 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         if low_memory:
             data = np.memmap("data.dat", dtype=dtype, mode='w+', shape=data_shape)
         else:
-            data = np.empty(data_shape[0], dtype=dtype)
+            # data = np.empty(data_shape[0], dtype=dtype)
+            data = np.empty(data_shape)
         for i, x in enumerate(X):
-            for j in range(len(x)):
-                try:
-                    data[i][j] = x[j]
-                except ValueError:
-                    continue
+            # for j in range(len(x)):
+            #     try:
+            #         data[i][j] = x[j]
+            #     except ValueError:
+            #         continue
+            data[i] = x
         return data
 
     @property
@@ -308,9 +310,10 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         for x in X:
             for feat in list(x.keys()):
                 if type(x[feat]) is str:
-                    x.update(self._fill_str_features(feat=feat,
-                                                     feat_v=x[feat],
-                                                     features_topf=self._str_features_topf[feat]))
+                    if feat in self._str_features_topf:
+                        x.update(self._fill_str_features(feat=feat,
+                                                         feat_v=x[feat],
+                                                         features_topf=self._str_features_topf[feat]))
                     del x[feat]
             yield x
 
