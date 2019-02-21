@@ -1,6 +1,7 @@
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
 from itertools import tee
+import multiprocessing as mp
 from collections import defaultdict, OrderedDict
 
 import numpy as np
@@ -107,6 +108,11 @@ class ModelBase(metaclass=ABCMeta):
     @abstractmethod
     def load(cls, scheme_path, params=None, **kwargs):
         pass
+
+    @property
+    @abstractmethod
+    def num_threads(self):
+        return
 
     @abstractmethod
     def get_features(self, X):
@@ -223,6 +229,11 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
     def load(cls, scheme_path, params=None, **kwargs):
         pass
 
+    @property
+    @abstractmethod
+    def num_threads(self):
+        return
+
     def get_features(self, X):
         i = 0
         l = 0
@@ -261,12 +272,20 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             data = np.memmap("data.dat", dtype=dtype, mode='w+', shape=data_shape)
         else:
             data = np.empty(data_shape[0], dtype=dtype)
-        for i, x in enumerate(X):
+
+        def fill_data(i_x):
+            i, x = i_x
             for j in range(len(x)):
                 try:
                     data[i][j] = x[j]
                 except ValueError:
                     continue
+
+        pool = mp.Pool(self.num_threads)
+        pool.map(fill_data, enumerate(X))
+        pool.close()
+        pool.join()
+
         return data
 
     @property
