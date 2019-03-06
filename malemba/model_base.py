@@ -273,20 +273,21 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         else:
             data = np.empty(data_shape[0], dtype=dtype)
 
-        def fill_data(i_x):
-            i, x = i_x
-            for j in range(len(x)):
-                try:
-                    data[i][j] = x[j]
-                except ValueError:
-                    continue
-
         pool = mp.Pool(self.num_threads)
-        pool.map(fill_data, enumerate(X))
+        pool.map(ArrayModelBase._fill_data, ((i_x, data) for i_x in enumerate(X)))
         pool.close()
         pool.join()
 
         return data
+
+    @staticmethod
+    def _fill_data(i_x, data):
+        i, x = i_x
+        for j in range(len(x)):
+            try:
+                data[i][j] = x[j]
+            except ValueError:
+                continue
 
     @property
     def features(self):
