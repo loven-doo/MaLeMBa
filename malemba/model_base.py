@@ -7,6 +7,7 @@ from collections import defaultdict, OrderedDict
 import numpy as np
 import pandas as pd
 from scipy.stats import fisher_exact, chi2_contingency
+from shared_ndarray import SharedNDArray
 
 
 class ModelBase(metaclass=ABCMeta):
@@ -273,19 +274,23 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         else:
             data = np.empty(data_shape[0], dtype=dtype)
 
+        print("empty data array created")
+        shared_data = SharedNDArray.copy(data)
         pool = mp.Pool(self.num_threads)
-        pool.map(ArrayModelBase._fill_data, ((i_x, data) for i_x in enumerate(X)))
+        pool.map(ArrayModelBase._fill_data, ({"i_x": i_x, "data": shared_data} for i_x in enumerate(X)))
         pool.close()
         pool.join()
+        shared_data.unlink()
+        print("data array filled")
 
-        return data
+        return np.array(shared_data)
 
     @staticmethod
-    def _fill_data(i_x, data):
-        i, x = i_x
+    def _fill_data(kwargs):
+        i, x = kwargs["i_x"]
         for j in range(len(x)):
             try:
-                data[i][j] = x[j]
+                kwargs["data"][i][j] = x[j]
             except ValueError:
                 continue
 
@@ -296,8 +301,6 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
     @property
     def feature_types(self):
         return self._feature_types
-
-    
 
     @property
     def labels(self):
