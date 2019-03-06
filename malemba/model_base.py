@@ -283,14 +283,14 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         shared_data.unlink()
         print("data array filled")
 
-        return np.array(shared_data)
+        return np.array(shared_data.array)
 
     @staticmethod
     def _fill_data(kwargs):
         i, x = kwargs["i_x"]
         for j in range(len(x)):
             try:
-                kwargs["data"][i][j] = x[j]
+                kwargs["data"].array[i][j] = x[j]
             except ValueError:
                 continue
 
