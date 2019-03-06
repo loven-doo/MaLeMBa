@@ -23,6 +23,7 @@ setup(
         'numpy >= 1.15.1',
         'pandas >= 0.23.4',
         'scipy >= 1.1.0',
+        'shared-ndarray >= 1.1.1',
     ],
     entry_points={
         'console_scripts': []
