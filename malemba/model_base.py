@@ -362,17 +362,20 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         return str_features
 
 
-def get_prob_labels(labels_scores, n_prob_states=1, max_d=0.1):
+def get_prob_labels(labels_scores, n_prob_states=1, max_d=0.1, min_prob=0.0):
     prob_labels = [(None, 0)]*n_prob_states
-    for label in labels_scores:
+    for label, score in sorted(labels_scores.items(), key=lambda p: p[1], reverse=True):
+        if score < min_prob:
+            break
+        i = 0
         for i in range(n_prob_states):
             if i > 0:
-                if prob_labels[i-1][1]-labels_scores[label] > max_d:
+                if prob_labels[i-1][1]-score > max_d:
+                    i = n_prob_states-1
                     break
             if prob_labels[i][0] is None:
-                prob_labels[i] = (label, labels_scores[label])
+                prob_labels[i] = (label, score)
                 break
-            elif labels_scores[label]-prob_labels[i][1] > 0:
-                prob_labels.insert(i, (label, labels_scores[label]))
-                break
+        if i >= n_prob_states-1:
+            break
     return list(filter(None, map(lambda l: l[0], prob_labels[:n_prob_states])))
