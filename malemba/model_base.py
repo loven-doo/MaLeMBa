@@ -28,11 +28,11 @@ class ModelBase(metaclass=ABCMeta):
             self.low_memory = True
 
     @abstractmethod
-    def fit(self, X, Y):
+    def fit(self, X, Y, **kwargs):
         pass
 
     @abstractmethod
-    def predict(self, X):
+    def predict(self, X, **kwargs):
         pass
 
     @staticmethod
@@ -143,7 +143,7 @@ class ModelBase(metaclass=ABCMeta):
 class ArrayModelBase(ModelBase, metaclass=ABCMeta):
 
     @abstractmethod
-    def fit(self, X, Y):
+    def fit(self, X, Y, **kwargs):
         """
         :param X: list or iterator of dicts with features {feat1: v1, feat2: v2, ...}
         :param Y: list of labels
@@ -162,7 +162,7 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         return X, Y, data_shape  # this X and Y can be the input for train
 
     @abstractmethod
-    def predict(self, X):
+    def predict(self, X, **kwargs):
         """
         :param X: list or iterator of dicts with features {feat1: v1, feat2: v2, ...}
         :return: list of dicts with labels scores
