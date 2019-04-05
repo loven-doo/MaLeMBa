@@ -29,7 +29,11 @@ class ModelBase(metaclass=ABCMeta):
 
     @abstractmethod
     def fit(self, X, Y, **kwargs):
-        pass
+        self._features = dict()
+        self._feature_types = dict()
+        self._labels = dict()
+        self._label_freqs = defaultdict(float)
+        self._str_features_topf = dict()
 
     @abstractmethod
     def predict(self, X, **kwargs):
@@ -148,6 +152,8 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
         :param X: list or iterator of dicts with features {feat1: v1, feat2: v2, ...}
         :param Y: list of labels
         """
+        super(ArrayModelBase, self).fit(X=X, Y=Y, **kwargs)
+        
         if self._convert_str_to_factors():
             X = self.str_to_factors(X)
         X, Xf = tee(X)
@@ -171,9 +177,10 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             X = self.str_to_factors(X)
         X = self.standardize_X(X=X)
         X, Xl = tee(X)
-        data_l = 0
-        for x in Xl:
-            data_l += 1
+        data_l = kwargs.get("data_l", 0)
+        if data_l <= 0:
+            for x in Xl:
+                data_l += 1
         data_shape = (data_l, len(self.features))
         # get and return the prediction result
         return X, data_shape  # this X can be the input for predict
@@ -379,3 +386,4 @@ def get_prob_labels(labels_scores, n_prob_states=1, max_d=0.1, min_prob=0.0):
         if i >= n_prob_states-1:
             break
     return list(filter(None, map(lambda l: l[0], prob_labels[:n_prob_states])))
+
