@@ -10,7 +10,7 @@ from scipy.stats import fisher_exact, chi2_contingency
 from shared_ndarray import SharedNDArray
 
 
-class ModelBase(metaclass=ABCMeta):
+class ModelBase(object, metaclass=ABCMeta):
 
     def __init__(self, params=None, **kwargs):
         self.params = params
@@ -385,5 +385,5 @@ def get_prob_labels(labels_scores, n_prob_states=1, max_d=0.1, min_prob=0.0):
                 break
         if i >= n_prob_states-1:
             break
-    return list(filter(None, map(lambda l: l[0], prob_labels[:n_prob_states])))
+    return list(filter(lambda l: l is not None, map(lambda l: l[0], prob_labels[:n_prob_states])))
 
