@@ -14,6 +14,8 @@ class ModelBase(object, metaclass=ABCMeta):
 
     def __init__(self, params=None, **kwargs):
         self.params = params
+        if self.params is None:
+            self.params = dict()
         self._features = dict()
         self._feature_types = dict()
         self._labels = dict()
