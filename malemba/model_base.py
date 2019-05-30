@@ -1,3 +1,4 @@
+import re
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
 from itertools import tee
@@ -251,8 +252,17 @@ class ArrayModelBase(ModelBase, metaclass=ABCMeta):
             for feat in x:
                 if feat not in self._features:
                     self._features[feat] = i
-                    self._feature_types[feat] = type(x[feat])
+                    if type(x[feat]) in (str, np.str, np.str_):
+                        self._feature_types[feat] = np.dtype("S%s" % len(x[feat]))
+                    else:
+                        self._feature_types[feat] = type(x[feat])
                     i += 1
+                elif re.match("\|S\d+", str(self._feature_types[feat])):
+                    try:
+                        if int(str(self._feature_types[feat])[2:]) < len(x[feat]):
+                            self._feature_types[feat] = np.dtype("S%s" % len(x[feat]))
+                    except TypeError:
+                        pass
             l += 1
         return l
 
