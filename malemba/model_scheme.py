@@ -31,6 +31,7 @@ class ModelScheme(JsonEntry):
         }
         return attr_scheme
 
+    @classmethod
     def load_from_dict(cls, in_dict):
         model_scheme = super(ModelScheme, cls).load_from_dict(in_dict=in_dict)
         for basic_model_key in model_scheme.basic_models:
