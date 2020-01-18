@@ -26,9 +26,7 @@ class ModelBase(object, metaclass=ABCMeta):
         self.label_weights = defaultdict(lambda: 1.0)
         if 'label_weights' in kwargs:
             self.label_weights.update(kwargs['label_weights'])
-        self.low_memory = False
-        if 'low_memory' in kwargs:
-            self.low_memory = True
+        self.low_memory = kwargs.get('low_memory', False)
 
     @abstractmethod
     def fit(self, X, Y, **kwargs):
@@ -56,7 +54,7 @@ class ModelBase(object, metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def validate(self, X_test, Y_test, labels_to_remove=None):
+    def validate(self, X_test, Y_test, labels_to_remove=None, **kwargs):
         pass
 
     @classmethod
