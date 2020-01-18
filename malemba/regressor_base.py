@@ -1,4 +1,5 @@
 import numbers
+import typing
 from abc import abstractmethod, ABCMeta
 from copy import deepcopy
 
@@ -69,7 +70,7 @@ class RegressorBase(object, metaclass=ABCMeta):
         Y_eval = np.array(list(Y))
         Y_test = np.array(list(Y_test))
         model_0.fit(X=X_eval, Y=Y_eval)
-        scores = cls.number_to_iterable(model_0.validate(X_test=X_test, Y_test=Y_test))
+        scores = cls.prepare_validation_scores(model_0.validate(X_test=X_test, Y_test=Y_test))
         best_score = sum(scores)
         for param in var_params_grid:
             print("'%s' parameter optimization started" % str(param))
@@ -79,7 +80,7 @@ class RegressorBase(object, metaclass=ABCMeta):
                 model = cls(params=deepcopy(curr_params))
                 model._str_features_topf = str_features_topf
                 model.fit(X=X_eval, Y=Y_eval)
-                scores = cls.number_to_iterable(model.validate(X_test=X_test, Y_test=Y_test))
+                scores = cls.prepare_validation_scores(model.validate(X_test=X_test, Y_test=Y_test))
                 score = sum(scores)
                 if score > best_score:
                     best_score = score
@@ -89,11 +90,13 @@ class RegressorBase(object, metaclass=ABCMeta):
         return best_params, best_score
 
     @staticmethod
-    def number_to_iterable(v):
-        if isinstance(v, numbers.Number):
-            return (v,)
-        else:
-            return v
+    def prepare_validation_scores(s):
+        if isinstance(s, numbers.Number):
+            return (s,)
+        elif isinstance(s, dict):
+            return list(s.values())
+        elif isinstance(s, typing.Iterable):
+            return s
 
     @abstractmethod
     def dump(self, scheme_path, **kwargs):
